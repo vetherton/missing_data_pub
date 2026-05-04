@@ -1,0 +1,13 @@
+data/*.npz
+data/*.csv
+src/nyse_permnos.csv
+data/sic_fic.csv
+data/shares_outstanding.npz
+src/nyse_permnos.csv
+data/sic_fic.csv
+data/shares_outstanding.npz
+.DS_Store
+.venv/
+data/
+images-pdfs/
+src/ticker_to_permno.csv
