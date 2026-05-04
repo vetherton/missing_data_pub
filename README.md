@@ -1,3 +1,50 @@
+# Vincent Etherton and Marcus Nelson, Extending upon "Missing Financial Data"
+
+## Extension: Heterogeneity in the Missingness Return Premium
+
+This section documents our original extension to the replication, which investigates 
+whether the missingness return premium documented in Section 5.1 of Bryzgalova et al. 
+is stable across time, industry, and firm quality dimensions.
+
+### Running the Extension
+
+The extension notebook can be run independently of the main replication notebooks. 
+It requires that the base data pipeline has already been run (steps 1–4 above).
+
+### Extension Results and Their Locations
+
+37. **Figure E.1: Return Premium by Sub-Period**
+    - Notebook: `run_ablation_return_premium.ipynb`
+    - Description: Decomposes the missingness return premium (missing minus observed, 
+      % p.a.) by characteristic across two sub-periods: 1977–1998 and 1999–2020. 
+      Sorted by the full-sample average premium in ascending order.
+    - Result written to: `images-pdfs/ablation/ReturnPremiumBySubperiod.pdf`
+
+38. **Figure E.2: Return Premium by Firm Quality Segment**
+    - Notebook: `run_ablation_return_premium.ipynb`
+    - Description: Six-panel figure decomposing the average missingness premium 
+      (missing minus observed mean return, % p.a.) across firm quality segments. 
+      Dashed line denotes the full-sample average premium. Panels include:
+        - By Market Size (ME quintile, 1=small)
+        - By FF10 Industry
+        - By Operating Profitability (OP quintile, 1=low)
+        - By Leverage (LEV quintile, 1=low)
+        - By Book-to-Market (B2M quintile, 1=growth)
+        - By Sub-period (1977–1998 vs. 1999–2020)
+    - Result written to: `images-pdfs/ablation/ReturnPremiumBySegment.pdf`
+
+### Notes on the Extension
+
+- Unlike the main replication, these results use **value-weighted** portfolios 
+  within each segment, consistent with Figure 13 of the original paper.
+- The full-sample average premium (dashed reference line in Figure E.2) is 
+  computed across all characteristics and the full 1977–2020 sample period.
+- The sub-period split at 1999 follows the train/test split used in the 
+  logistic regression analysis of Table 1 in the original paper.
+- These figures require the true CRSP returns (not the noise-contaminated 
+  placeholder returns) to replicate quantitatively. Users with WRDS access 
+  should restore true returns before running this notebook (see Data Notes above).
+
 # Missing Financial Data Result Replication Code
 
 ## Data
@@ -10,7 +57,31 @@ https://www.dropbox.com/scl/fi/424yiolvlkowhd41v4c7h/raw_rank_trunk_chars.npz?rl
 
 Note, there are two differences between the data-set we have provided and the data-set used in the paper
 1. The data-set we have provided is a truncated version of the data-set in the paper. This is because the full data-set is around 20 GB, and running all the results requires making multiple copies of the data-set, which is very time and space consuming. For this replication package, we have taken the last 5 years of the characteristic data. Note that we also provide the full data set of the characteristic data for all the years and the code can be applied accordingly to the full data. 
-2. The returns in the data-set we have provided have been altered such as not to violate the terms of service from their source, we have done this by adding noise to them. Specifically, we have added i.i.d noise with a Normal(0, 0.1) distribution to each return observation. Therefore, one should not expect this data to exactly replicate any of the numerical results in the paper concerning returns, nor should it replicate standard results. However, the qualitative results are similar. The permos corresponding to returns have not been modified in any way, and therefore users with WRDS access can easily replace the contaminated returns with the correct returns and can exactly replicate the numerical results in the paper.  
+2. The returns in the data-set we have provided have been altered such as not to violate the terms of service from their source, we have done this by adding noise to them. Specifically, we have added i.i.d noise with a Normal(0, 0.1) distribution to each return observation. Therefore, one should not expect this data to exactly replicate any of the numerical results in the paper concerning returns, nor should it replicate standard results. However, the qualitative results are similar. The permos corresponding to returns have not been modified in any way, and therefore users with WRDS access can easily replace the contaminated returns with the correct returns and can exactly replicate the numerical results in the paper.
+
+## Replication Utilities and AI Assistance
+
+The following files were created with the assistance of Claude (Anthropic) to 
+extend the replication package beyond the original code release:
+
+- **`src/replace_returns.py`**: Queries WRDS directly to replace the noise-contaminated 
+  placeholder returns in the provided dataset with true CRSP returns. Users with WRDS 
+  access should run this before executing any return-dependent results to exactly 
+  replicate the numerical findings of the paper. See Data Notes above for details on 
+  why the provided returns are altered.
+
+- **`src/build_full_npz.py`**: Constructs the full characteristic panel `.npz` file 
+  from the `.feather` file provided by the original authors. This is necessary for 
+  users who have obtained the full (non-truncated) data release and wish to run the 
+  complete 1977–2020 sample rather than the 5-year truncated version.
+
+- **`src/*_5yr.ipynb` notebooks**: Adapted versions of the original replication 
+  notebooks configured to run on the 5-year truncated dataset for presentation and 
+  demonstration purposes. These include `run_section_2_plots_5yr.ipynb` through 
+  `run_section_6_plots_5yr.ipynb` and `run_ablation_return_premium_5yr.ipynb`.
+
+These files were generated with AI assistance and have been reviewed for correctness, 
+but users should exercise judgment when using them for research purposes.
 
 ## Running the Code
 
@@ -79,3 +150,5 @@ Main Text
 34. Figure D.8: Global and Local Imputation for Individual Characteristics `run_appendix_plots.ipynb` code located (src/plots_and_tables/section_5.py) result written to `images-pdfs/section5/metrics_by_char_vol_sort-table_2_out_of_sample_block.pdf`
 35. Figure D.9: Top and Bottom Deciles with and without Missing Values `run_appendix_plots.ipynb` code located (src/plots_and_tables/section_6.py) result written to `images-pdfs/section6/[hl-portfolios-Intangibles,TradingFrictions,Other-MeanReturn.pdf, hl-portfolios-Intangibles,TradingFrictions,Other-SharpeRatio.pdf, hl-portfolios-Investment,Profitability-MeanReturn.pdf, hl-portfolios-Investment,Profitability-SharpeRatio.pdf, hl-portfolios-PastReturns,Value-MeanReturn.pdf, hl-portfolios-PastReturns,Value-SharpeRatio.pdf]`
 36. Figure D.10: Sharpe Ratios with Non-parametric IPCA Factors `run_appendix_plots.ipynb` code located (src/plots_and_tables/appendix.py) result written to `images-pdfs/appendix/[decile_ipca_sharpes_in_sample.pdf, decile_ipca_sharpes_outof_sample.pdf]`
+
+
